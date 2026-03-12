@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PredVisit — Group Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .gc-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden}
+    .gc-header{padding:14px 24px;border-bottom:1px solid var(--g200);background:var(--w);display:flex;align-items:center;gap:12px;flex-shrink:0}
+    .gc-header h2{font-size:1rem;font-weight:700;color:var(--g900);flex:1}
+    .gc-online{font-size:.75rem;color:var(--g400)}
+    .gc-body{flex:1;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:6px;background:var(--g50)}
+    .gc-day{text-align:center;padding:8px;font-size:.72rem;color:var(--g400);font-weight:500}
+    .gc-msg{display:flex;flex-direction:column;max-width:72%;animation:fadeUp .2s ease}
+    .gc-msg.mine{align-self:flex-end;align-items:flex-end}
+    .gc-msg.other{align-self:flex-start;align-items:flex-start}
+    .gc-sender{font-size:.7rem;font-weight:600;margin-bottom:2px;padding:0 4px}
+    .gc-msg.mine .gc-sender{color:var(--v600)}
+    .gc-msg.other .gc-sender{color:var(--g500)}
+    .gc-bubble{padding:9px 14px;border-radius:14px;font-size:.88rem;line-height:1.55;word-break:break-word;position:relative}
+    .gc-msg.mine .gc-bubble{background:var(--v600);color:#fff;border-bottom-right-radius:4px}
+    .gc-msg.other .gc-bubble{background:var(--w);border:1px solid var(--g200);color:var(--g800);border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    .gc-time{font-size:.65rem;margin-top:2px;padding:0 4px}
+    .gc-msg.mine .gc-time{color:var(--v300)}
+    .gc-msg.other .gc-time{color:var(--g400)}
+    .gc-footer{padding:10px 24px 14px;background:var(--w);border-top:1px solid var(--g200);flex-shrink:0}
+    .gc-input-row{display:flex;align-items:flex-end;gap:8px;background:var(--g50);border:1.5px solid var(--g200);border-radius:var(--r);padding:4px 4px 4px 14px;transition:all .15s}
+    .gc-input-row:focus-within{border-color:var(--v400);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+    .gc-input{flex:1;border:none;background:transparent;color:var(--g800);font:400 .88rem var(--font);resize:none;outline:none;max-height:96px;padding:6px 0;line-height:1.5}
+    .gc-input::placeholder{color:var(--g400)}
+    .gc-empty{text-align:center;padding:60px 20px;color:var(--g400);font-size:.9rem}
+    .gc-empty-icon{font-size:2.5rem;margin-bottom:12px}
+    /* Notification toast */
+    .toast{position:fixed;top:16px;right:16px;z-index:999;background:var(--w);border:1px solid var(--g200);border-left:3px solid var(--v500);border-radius:10px;padding:10px 16px;box-shadow:0 8px 24px rgba(0,0,0,.1);max-width:320px;animation:toastIn .3s ease;font-size:.82rem}
+    .toast-name{font-weight:600;color:var(--v700);font-size:.78rem}
+    .toast-text{color:var(--g700);margin-top:2px}
+    .toast.hide{animation:toastOut .3s ease forwards}
+    @keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark"><img src="/image.png" alt="PredVisit"></div>
+      <div><span class="brand-name">PredVisit</span><span class="brand-sub">Medical Assistant</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item" onclick="window.location.href='/?view=chat'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>AI Chat</button>
+      <button class="nav-item" onclick="window.location.href='/?view=dashboard'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Analytics</button>
+      <button class="nav-item" onclick="window.location.href='/?view=patients'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Patients</button>
+      <button class="nav-item" onclick="window.location.href='/operations.html'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>Operations</button>
+      <button class="nav-item" onclick="window.location.href='/staff.html'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6m3-3h-6"/></svg>Medical Staff</button>
+      <button class="nav-item active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="13" x2="23" y2="13"/><path d="M23 6l-5.12 5.12M16 21v-2a4 4 0 014-4h0"/></svg>Group Chat</button>
+    </nav>
+    <div class="sidebar-bottom"><div class="status-dot"></div><span class="user-email" id="userEmail">—</span><button class="btn-logout" onclick="AUTH.logout()">Logout</button></div>
+  </aside>
+
+  <main class="main">
+    <div class="gc-wrap">
+      <div class="gc-header">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <h2>Group Chat</h2>
+        <span class="gc-online" id="onlineLabel">Medical Personnel</span>
+      </div>
+      <div class="gc-body" id="gcBody">
+        <div class="gc-empty" id="gcEmpty"><div class="gc-empty-icon">💬</div>No messages yet. Start the conversation!</div>
+      </div>
+      <div class="gc-footer">
+        <div class="gc-input-row">
+          <textarea class="gc-input" id="gcInput" placeholder="Type a message..." rows="1" onkeydown="gcHandleKey(event)" oninput="gcAutoGrow(this)"></textarea>
+          <button class="mic-btn" id="gcMicBtn" onclick="gcToggleRec()" title="Voice Input"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+          <button class="send-btn" id="gcSendBtn" onclick="gcSend()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toastContainer"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/lang.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    var myEmail='', myName='', sbClient=null, gcChannel=null;
+    var gcRecorder=null, gcAudioChunks=[], gcIsRec=false;
+
+    function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+    // ─── INIT ───
+    (async function(){
+      var user=await AUTH.getUser();
+      if(!user){window.location.href='/login.html';return}
+      myEmail=user.email||'';
+      myName=myEmail.split('@')[0];
+      document.getElementById('userEmail').textContent=myEmail;
+
+      // Init Supabase client for realtime
+      var cfg=window.MEDAI_CONFIG;
+      sbClient=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
+
+      await loadMessages();
+      subscribeRealtime();
+    })();
+
+    // ─── LOAD MESSAGES ───
+    async function loadMessages(){
+      try{
+        var res=await fetch('/api/groupchat');
+        var d=await res.json();
+        var msgs=d.data||[];
+        renderMessages(msgs);
+      }catch(e){console.error(e)}
+    }
+
+    function renderMessages(msgs){
+      var body=document.getElementById('gcBody');
+      var empty=document.getElementById('gcEmpty');
+      if(!msgs.length){if(empty)empty.style.display='';return}
+      if(empty)empty.style.display='none';
+
+      // Remove old messages but keep empty div
+      body.querySelectorAll('.gc-msg,.gc-day').forEach(function(el){el.remove()});
+
+      var today=new Date().toLocaleDateString('ru-RU');
+      body.insertAdjacentHTML('beforeend','<div class="gc-day">Сегодня</div>');
+
+      msgs.forEach(function(m){appendMsgDom(m,false)});
+      body.scrollTop=body.scrollHeight;
+    }
+
+    function appendMsgDom(m,scroll){
+      var body=document.getElementById('gcBody');
+      var empty=document.getElementById('gcEmpty');
+      if(empty)empty.style.display='none';
+
+      var isMine=m.user_email===myEmail;
+      var time=new Date(m.created_at);
+      var hh=String(time.getHours()).padStart(2,'0');
+      var mm=String(time.getMinutes()).padStart(2,'0');
+      var name=m.user_name||m.user_email.split('@')[0];
+
+      var html='<div class="gc-msg '+(isMine?'mine':'other')+'">'+
+        '<div class="gc-sender">'+esc(isMine?'Вы':name)+'</div>'+
+        '<div class="gc-bubble">'+esc(m.message)+'</div>'+
+        '<div class="gc-time">'+hh+':'+mm+'</div>'+
+      '</div>';
+      body.insertAdjacentHTML('beforeend',html);
+      if(scroll!==false)body.scrollTop=body.scrollHeight;
+    }
+
+    // ─── REALTIME ───
+    function subscribeRealtime(){
+      if(!sbClient)return;
+      gcChannel=sbClient.channel('group-chat-room')
+        .on('postgres_changes',{event:'INSERT',schema:'public',table:'group_messages'},function(payload){
+          var msg=payload.new;
+          appendMsgDom(msg,true);
+          // Show notification if from someone else
+          if(msg.user_email!==myEmail){
+            showToast(msg.user_name||msg.user_email.split('@')[0],msg.message);
+          }
+        })
+        .subscribe();
+    }
+
+    // ─── SEND ───
+    function gcHandleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();gcSend()}}
+    function gcAutoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,96)+'px'}
+
+    async function gcSend(){
+      var inp=document.getElementById('gcInput');
+      var txt=inp.value.trim();
+      if(!txt)return;
+      inp.value='';inp.style.height='auto';
+      document.getElementById('gcSendBtn').disabled=true;
+
+      try{
+        await fetch('/api/groupchat',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({user_email:myEmail,user_name:myName,message:txt})
+        });
+      }catch(e){console.error(e)}
+
+      document.getElementById('gcSendBtn').disabled=false;
+      inp.focus();
+    }
+
+    // ─── TOAST NOTIFICATIONS ───
+    var toastTimer=null;
+    function showToast(name,text){
+      var c=document.getElementById('toastContainer');
+      // Remove existing
+      var old=c.querySelector('.toast');
+      if(old)old.remove();
+      clearTimeout(toastTimer);
+
+      var t=document.createElement('div');
+      t.className='toast';
+      t.innerHTML='<div class="toast-name">'+esc(name)+'</div><div class="toast-text">'+esc(text.substring(0,80))+(text.length>80?'...':'')+'</div>';
+      c.appendChild(t);
+
+      toastTimer=setTimeout(function(){
+        t.classList.add('hide');
+        setTimeout(function(){t.remove()},300);
+      },2000);
+    }
+
+    // ─── WHISPER VOICE ───
+    async function gcToggleRec(){
+      if(gcIsRec){gcStopRec();return}
+      var btn=document.getElementById('gcMicBtn');
+      try{
+        var stream=await navigator.mediaDevices.getUserMedia({audio:true});
+        var mime='audio/webm';
+        if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))mime='audio/webm;codecs=opus';
+        else if(MediaRecorder.isTypeSupported('audio/ogg;codecs=opus'))mime='audio/ogg;codecs=opus';
+        else if(MediaRecorder.isTypeSupported('audio/mp4'))mime='audio/mp4';
+
+        gcAudioChunks=[];
+        gcRecorder=new MediaRecorder(stream,{mimeType:mime});
+        gcRecorder.ondataavailable=function(e){if(e.data.size>0)gcAudioChunks.push(e.data)};
+        gcRecorder.onstop=function(){
+          stream.getTracks().forEach(function(t){t.stop()});
+          var blob=new Blob(gcAudioChunks,{type:mime});
+          gcTranscribe(blob,mime);
+        };
+        gcRecorder.start();
+        gcIsRec=true;btn.classList.add('recording');
+      }catch(e){alert('Микрофон: '+e.message)}
+    }
+
+    function gcStopRec(){
+      if(gcRecorder&&gcRecorder.state!=='inactive')gcRecorder.stop();
+      gcIsRec=false;
+      document.getElementById('gcMicBtn').classList.remove('recording');
+    }
+
+    async function gcTranscribe(blob,mime){
+      var btn=document.getElementById('gcMicBtn');
+      btn.classList.add('transcribing');
+      try{
+        var resp=await fetch('/api/whisper',{
+          method:'POST',
+          headers:{'Content-Type':'application/octet-stream','X-Audio-Type':mime},
+          body:blob
+        });
+        var d=await resp.json();
+        if(d.text){
+          var inp=document.getElementById('gcInput');
+          var ex=inp.value.trim();
+          inp.value=ex?(ex+' '+d.text):d.text;
+          inp.focus();gcAutoGrow(inp);
+        }
+      }catch(e){}
+      btn.classList.remove('transcribing');
+    }
+  </script>
+</body>
+</html>

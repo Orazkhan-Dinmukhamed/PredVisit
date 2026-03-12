@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PredVisit — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+  <style>
+    :root{--v500:#8b5cf6;--v600:#7c3aed;--v700:#6d28d9;--v50:#f5f3ff;--v100:#ede9fe;--g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g400:#9ca3af;--g600:#4b5563;--g800:#1f2937;--g900:#111827;--w:#fff;--font:'DM Sans',system-ui,sans-serif}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font);background:var(--g50);min-height:100vh;display:grid;place-items:center;color:var(--g800);-webkit-font-smoothing:antialiased}
+    .login-card{width:420px;max-width:92vw;background:var(--w);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.06);padding:36px 32px;text-align:center;animation:slideUp .4s ease}
+    .brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px}
+    .brand-icon{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--v600),var(--v500));display:grid;place-items:center;color:#fff}
+    .brand-icon svg{width:22px;height:22px}
+    .brand-name{font-size:1.3rem;font-weight:700;color:var(--g900)}
+    h2{font-size:1.1rem;font-weight:600;margin-bottom:4px;color:var(--g900)}
+    .sub{font-size:.85rem;color:var(--g400);margin-bottom:20px}
+    .tabs{display:flex;background:var(--g100);border-radius:8px;padding:3px;margin-bottom:22px}
+    .tab{flex:1;padding:8px;border:none;border-radius:6px;background:transparent;color:var(--g400);font:500 .85rem var(--font);cursor:pointer;transition:all .15s}
+    .tab.active{background:var(--w);color:var(--v700);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+    .field{margin-bottom:14px;text-align:left}
+    .field label{display:block;font-size:.76rem;color:var(--g600);font-weight:500;margin-bottom:4px}
+    .field input{width:100%;padding:10px 13px;border:1.5px solid var(--g200);border-radius:8px;font:400 .9rem var(--font);outline:none;color:var(--g800);transition:border-color .15s}
+    .field input:focus{border-color:var(--v500);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+    .field input::placeholder{color:var(--g400)}
+    .field .hint{font-size:.72rem;color:var(--g400);margin-top:3px}
+    .pw-toggle{position:relative}
+    .pw-toggle input{padding-right:40px}
+    .pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--g400);cursor:pointer;padding:4px;font-size:.8rem}
+    .otp-inputs{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+    .otp-inputs input{width:44px;height:50px;text-align:center;font-size:1.2rem;font-weight:600;border:1.5px solid var(--g200);border-radius:10px;outline:none;font-family:var(--font);color:var(--g900);transition:border-color .15s}
+    .otp-inputs input:focus{border-color:var(--v500);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+    .btn{width:100%;padding:11px;border:none;border-radius:8px;background:var(--v600);color:#fff;font:600 .9rem var(--font);cursor:pointer;transition:all .2s}
+    .btn:hover{background:var(--v700)}
+    .btn:disabled{opacity:.5;cursor:default}
+    .err{color:#ef4444;font-size:.8rem;margin-top:8px;min-height:18px}
+    .back-link{display:inline-block;margin-top:14px;font-size:.82rem;color:var(--v600);cursor:pointer;text-decoration:none}
+    .back-link:hover{text-decoration:underline}
+    .step{display:none}.step.active{display:block}
+    @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="brand">
+      <div class="brand-icon" style="overflow:hidden"><img src="/image.png" alt="PredVisit" style="width:100%;height:100%;object-fit:cover;border-radius:11px"></div>
+      <span class="brand-name">PredVisit</span>
+    </div>
+
+    <!-- Step 1: Login or Register -->
+    <div class="step active" id="stepAuth">
+      <div class="tabs">
+        <button class="tab active" id="tabLogin" onclick="switchTab('login')"'>Sign In</button>
+        <button class="tab" id="tabRegister" onclick="switchTab('register')">Registration</button>
+      </div>
+
+      <div id="loginForm">
+        <h2>Sign In</h2>
+        <p class="sub">Enter email and password</p>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="doctor@hospital.kz" autofocus>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="pw-toggle">
+            <input type="password" id="loginPassword" placeholder="Minimum 6 characters">
+            <button class="pw-eye" onclick="togglePw('loginPassword',this)" type="button">👁</button>
+          </div>
+        </div>
+        <button class="btn" id="loginBtn" onclick="handleLogin()">Sign In</button>
+        <p class="err" id="loginErr"></p>
+      </div>
+
+      <div id="registerForm" style="display:none">
+        <h2>Registration</h2>
+        <p class="sub">Create an account — a confirmation code will be sent to email</p>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="doctor@hospital.kz">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="pw-toggle">
+            <input type="password" id="regPassword" placeholder="Minimum 6 characters">
+            <button class="pw-eye" onclick="togglePw('regPassword',this)" type="button">👁</button>
+          </div>
+          <div class="hint">Minimum 6 characters</div>
+        </div>
+        <div class="field">
+          <label>Repeat Password</label>
+          <div class="pw-toggle">
+            <input type="password" id="regPassword2" placeholder="Repeat Password">
+            <button class="pw-eye" onclick="togglePw('regPassword2',this)" type="button">👁</button>
+          </div>
+        </div>
+        <button class="btn" id="regBtn" onclick="handleRegister()">Register</button>
+        <p class="err" id="regErr"></p>
+      </div>
+    </div>
+
+    <!-- Step 2: OTP (only after registration) -->
+    <div class="step" id="stepOtp">
+      <h2>Confirm Email</h2>
+      <p class="sub" id="otpSub">6-digit code sent to your email</p>
+      <div class="otp-inputs" id="otpInputs">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+      </div>
+      <button class="btn" id="verifyBtn" onclick="handleVerify()">Confirm</button>
+      <p class="err" id="otpErr"></p>
+      <a class="back-link" onclick="goBack()">← Back</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/lang.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    var regEmail = '';
+    var currentTab = 'login';
+
+    // Already logged in? Redirect
+    (async function() {
+      var user = await AUTH.getUser();
+      if (user) window.location.href = '/';
+    })();
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+      document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+      // Clear errors
+      document.getElementById('loginErr').textContent = '';
+      document.getElementById('regErr').textContent = '';
+    }
+
+    function togglePw(inputId, btn) {
+      var inp = document.getElementById(inputId);
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🔒'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    // ─── LOGIN ───
+    async function handleLogin() {
+      var email = document.getElementById('loginEmail').value.trim();
+      var password = document.getElementById('loginPassword').value;
+      var err = document.getElementById('loginErr');
+      err.textContent = '';
+
+      if (!email || !email.includes('@')) { err.textContent = 'Enter a valid email'; return; }
+      if (password.length < 6) { err.textContent = 'Password minimum 6 characters'; return; }
+
+      var btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = 'Signing in...';
+
+      try {
+        await AUTH.signIn(email, password);
+        window.location.href = '/';
+      } catch (e) {
+        var msg = e.message || '';
+        if (msg.includes('Invalid login credentials')) {
+          err.textContent = 'Invalid email or password';
+        } else if (msg.includes('Email not confirmed')) {
+          err.textContent = 'Email not confirmed. Please register again.';
+        } else {
+          err.textContent = msg || 'Login error';
+        }
+      }
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+
+    // ─── REGISTER ───
+    async function handleRegister() {
+      var email = document.getElementById('regEmail').value.trim();
+      var pw = document.getElementById('regPassword').value;
+      var pw2 = document.getElementById('regPassword2').value;
+      var err = document.getElementById('regErr');
+      err.textContent = '';
+
+      if (!email || !email.includes('@')) { err.textContent = 'Enter a valid email'; return; }
+      if (pw.length < 6) { err.textContent = 'Password minimum 6 characters'; return; }
+      if (pw !== pw2) { err.textContent = 'Passwords do not match'; return; }
+
+      var btn = document.getElementById('regBtn');
+      btn.disabled = true; btn.textContent = 'Registering...';
+
+      try {
+        await AUTH.signUp(email, pw);
+        regEmail = email;
+        document.getElementById('otpSub').textContent = 'Confirmation code sent to ' + email;
+        document.getElementById('stepAuth').classList.remove('active');
+        document.getElementById('stepOtp').classList.add('active');
+        document.querySelector('#otpInputs input').focus();
+      } catch (e) {
+        var msg = e.message || '';
+        if (msg.includes('already registered')) {
+          err.textContent = 'This email is already registered.';
+        } else {
+          err.textContent = msg || 'Registration error';
+        }
+      }
+      btn.disabled = false; btn.textContent = 'Register';
+    }
+
+    // ─── VERIFY OTP ───
+    async function handleVerify() {
+      var inputs = document.querySelectorAll('#otpInputs input');
+      var code = '';
+      inputs.forEach(function(inp) { code += inp.value; });
+      var err = document.getElementById('otpErr');
+      err.textContent = '';
+
+      if (code.length !== 6) { err.textContent = 'Enter all 6 digits'; return; }
+
+      var btn = document.getElementById('verifyBtn');
+      btn.disabled = true; btn.textContent = 'Verifying...';
+
+      try {
+        await AUTH.verifyOtp(regEmail, code);
+        window.location.href = '/';
+      } catch (e) {
+        err.textContent = e.message || 'Invalid code';
+      }
+      btn.disabled = false; btn.textContent = 'Confirm';
+    }
+
+    function goBack() {
+      document.getElementById('stepOtp').classList.remove('active');
+      document.getElementById('stepAuth').classList.add('active');
+      document.getElementById('otpErr').textContent = '';
+      var inputs = document.querySelectorAll('#otpInputs input');
+      inputs.forEach(function(inp) { inp.value = ''; });
+    }
+
+    // OTP auto-focus behavior
+    var otpFields = document.querySelectorAll('#otpInputs input');
+    otpFields.forEach(function(inp, i) {
+      inp.addEventListener('input', function(e) {
+        var v = e.target.value.replace(/\D/g, '');
+        e.target.value = v;
+        if (v && i < 5) otpFields[i + 1].focus();
+        if (i === 5 && v) handleVerify();
+      });
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && !e.target.value && i > 0) otpFields[i - 1].focus();
+      });
+      inp.addEventListener('paste', function(e) {
+        e.preventDefault();
+        var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+        for (var j = 0; j < pasted.length; j++) {
+          if (otpFields[i + j]) otpFields[i + j].value = pasted[j];
+        }
+        if (pasted.length === 6) handleVerify();
+      });
+    });
+
+    // Enter key handlers
+    document.getElementById('loginEmail').addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('loginPassword').focus(); });
+    document.getElementById('loginPassword').addEventListener('keydown', function(e) { if (e.key === 'Enter') handleLogin(); });
+    document.getElementById('regEmail').addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('regPassword').focus(); });
+    document.getElementById('regPassword').addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('regPassword2').focus(); });
+    document.getElementById('regPassword2').addEventListener('keydown', function(e) { if (e.key === 'Enter') handleRegister(); });
+  </script>
+</body>
+</html>

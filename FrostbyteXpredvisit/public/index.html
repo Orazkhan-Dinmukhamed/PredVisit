@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PredVisit — Medical Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark"><img src="/image.png" alt="PredVisit"></div>
+      <div><span class="brand-name">PredVisit</span><span class="brand-sub">Medical Assistant</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="chat" onclick="switchView('chat')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span data-i18n="navChat">AI Chat</span></button>
+      <button class="nav-item" data-view="dashboard" onclick="switchView('dashboard')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span data-i18n="navAnalytics">Analytics</span></button>
+      <button class="nav-item" data-view="patients" onclick="switchView('patients')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span data-i18n="navPatients">Patients</span></button>
+      <button class="nav-item" onclick="window.location.href='/operations.html'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg><span data-i18n="navOperations">Operations</span></button>
+      <button class="nav-item" onclick="window.location.href='/staff.html'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6m3-3h-6"/></svg><span data-i18n="navStaff">Medical Staff</span></button>
+      <button class="nav-item" onclick="window.location.href='/groupchat.html'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg><span data-i18n="navGroupChat">Group Chat</span></button>
+      <div class="nav-sep"></div>
+      <div class="chat-list-header"><span data-i18n="navChatHistory">Chat History</span><button class="btn-new-chat" onclick="newChat()" title="New chat">+</button></div>
+      <div class="chat-list" id="chatList"></div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="status-dot"></div>
+      <span class="user-email" id="userEmail">—</span>
+      <button class="btn-logout" onclick="AUTH.logout()" data-i18n="logout">Logout</button>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <!-- CHAT -->
+    <section class="view active" id="view-chat">
+      <header class="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <h1 class="topbar-title" id="chatTitleEl" data-i18n="chatTitle">AI Chat</h1>
+      
+      </header>
+      <div class="chat-body" id="chatMessages">
+        <div class="chat-logo-wrap centered" id="chatLogoWrap">
+          <img src="/image2.png" alt="PredVisit" class="chat-logo-img">
+        </div>
+      </div>
+      <div class="chat-footer">
+        <div class="chips" id="chipsArea"><button class="chip" onclick="insertPrompt('Readmission rates by month')">📈 Readmissions</button><button class="chip" onclick="insertPrompt('Patients with pneumonia')">🫁 Pneumonia</button><button class="chip" onclick="insertPrompt('Average hospitalization duration by diagnosis')">⏱ Duration</button><button class="chip" onclick="insertPrompt('Statistics by department')">🏥 Departments</button></div>
+        <div class="input-row">
+          <textarea id="chatInput" data-i18n="inputPh" placeholder="Ask a question..." rows="1" onkeydown="handleKey(event)" oninput="autoGrow(this)"></textarea>
+          <div class="mode-dropdown-wrap">
+            <button class="mode-dropdown-btn" id="modeDropBtn" onclick="toggleModeDropdown()"><span class="mode-dot db" id="modeDot"></span><span id="modeLabelBtn" data-i18n="modeDb">Database</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="mode-dropdown" id="modeDropdown">
+              <div class="mode-opt active" id="optDb" onclick="setMode('database')"><span class="mode-dot" style="background:var(--v500)"></span><span data-i18n="modeDb">Database</span><span class="mode-opt-info" data-tip="Analyzes patient data, calculates readmission rates">i</span></div>
+              <div class="mode-opt" id="optMed" onclick="setMode('medical')"><span class="mode-dot" style="background:var(--green)"></span><span data-i18n="modeMed">Medical</span><span class="mode-opt-info" data-tip="Medical reference: diagnoses, ICD-10, epidemiology">i</span></div>
+              <div class="mode-opt" id="optDraft" onclick="setMode('draft')"><span class="mode-dot" style="background:var(--g400)"></span><span data-i18n="modeDraft">Draft</span><span class="mode-opt-info" data-tip="Free conversation without saving">i</span></div>
+            </div>
+          </div>
+          <button class="mic-btn" id="micBtn" onclick="toggleRecording()" title="Voice Input"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+        </div>
+        <p class="disclaimer" id="disclaimer">Responses are based on patient database</p>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="view" id="view-dashboard">
+      <header class="topbar"><button class="menu-toggle" onclick="toggleSidebar()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><h1 class="topbar-title" data-i18n="analyticsTitle">Hospitalization Analytics</h1></header>
+      <div class="scroll-area">
+        <div class="dash-loader" id="dashLoader" style="padding:24px 28px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px;width:100%"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;width:100%"><div class="skeleton" style="height:180px;border-radius:12px"></div><div class="skeleton" style="height:180px;border-radius:12px"></div></div>
+          <div class="skeleton" style="height:120px;border-radius:12px;width:100%"></div>
+        </div>
+        <div class="dash" id="dashContent" style="display:none">
+          <div class="kpi-row" id="kpiRow"></div>
+          <div class="two-col"><div class="card"><h3 class="card-title" data-i18n="byMonth">By Month</h3><div id="monthBars"></div></div><div class="card"><h3 class="card-title" data-i18n="byAge">By Age Group</h3><div id="ageBars"></div></div></div>
+          <div class="card" style="margin-bottom:14px"><h3 class="card-title" data-i18n="byDept">By Department</h3><div id="deptBars"></div></div>
+          <div class="card"><h3 class="card-title" data-i18n="topDiag">Top Diagnoses</h3><div class="tbl-scroll"><table class="tbl" id="diagTbl"><thead><tr><th>Diagnosis</th><th>ICD-10</th><th>Dept</th><th>Total</th><th>Readmit</th><th>%</th><th>Avg Days</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PATIENTS -->
+    <section class="view" id="view-patients">
+      <header class="topbar"><button class="menu-toggle" onclick="toggleSidebar()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><h1 class="topbar-title">Patients</h1><button class="btn-primary" onclick="openAddModal()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Patient</button></header>
+      <div class="scroll-area">
+        <div class="filters-strip">
+          <div class="fi"><label>Diagnosis</label><input id="fDiag" placeholder="Search..." oninput="debounceFilter()"></div>
+          <div class="fi"><label>ICD-10</label><input id="fIcd" placeholder="J18.9" oninput="debounceFilter()"></div>
+          <div class="fi"><label>Department</label><select id="fDept" onchange="applyFilters()"><option value="">All</option></select></div>
+          <div class="fi"><label>Age group</label><select id="fAge" onchange="applyFilters()"><option value="">All</option><option>0-17</option><option>18-24</option><option>25-39</option><option>40-64</option><option>65+</option></select></div>
+          <div class="fi"><label>Gender</label><select id="fGender" onchange="applyFilters()"><option value="">All</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
+          <div class="fi"><label>Month</label><select id="fMonth" onchange="applyFilters()"><option value="">All</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select></div>
+          <div class="fi"><label>Readmission</label><select id="fReadmit" onchange="applyFilters()"><option value="">All</option><option value="true">Readmitted</option><option value="false">First-time</option></select></div>
+          <div class="fi"><label>IIN</label><input id="fIin" placeholder="001" oninput="debounceFilter()"></div>
+          <button class="btn-ghost" onclick="resetFilters()">Reset</button>
+        </div>
+        <p class="result-count" id="resultCount"></p>
+        <div class="tbl-scroll"><table class="tbl patients-tbl"><thead><tr>
+          <th class="sortable" onclick="sortBy('patient_name')">Patient</th><th class="sortable" onclick="sortBy('iin')">IIN</th><th class="sortable" onclick="sortBy('age')">Age</th><th>Group</th><th>Gender</th><th class="sortable" onclick="sortBy('diagnosis')">Diagnosis</th><th>ICD-10</th><th>Department</th><th class="sortable" onclick="sortBy('hospitalization_days')">Days</th><th>Month</th><th>Status</th><th></th>
+        </tr></thead><tbody id="patientsBody"></tbody></table></div>
+        <div class="pager" id="pager"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add patient modal -->
+  <div class="overlay" id="addOverlay" onclick="closeAddModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-head"><h2>New Patient</h2><button class="modal-x" onclick="closeAddModal()">&times;</button></div>
+      <div class="modal-body">
+        <div class="fg2"><div class="fg"><label>Name <em>*</em></label><input id="aName" placeholder="patient301"></div><div class="fg"><label>IIN <em>*</em></label><input id="aIin" placeholder="301"></div></div>
+        <div class="fg3"><div class="fg"><label>Age</label><input type="number" id="aAge" placeholder="35" min="0" max="120"></div><div class="fg"><label>Group</label><select id="aGroup"><option>0-17</option><option>18-24</option><option selected>25-39</option><option>40-64</option><option>65+</option></select></div><div class="fg"><label>Gender</label><select id="aGender"><option>Male</option><option>Female</option></select></div></div>
+        <div class="fg2"><div class="fg"><label>Admission date</label><input type="date" id="aDate"></div><div class="fg"><label>Month</label><select id="aMonth"><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select></div></div>
+        <div class="fg2"><div class="fg"><label>Diagnosis <em>*</em></label><input id="aDiag" placeholder="Pneumonia"></div><div class="fg"><label>ICD-10 <em>*</em></label><input id="aIcd" placeholder="J18.9"></div></div>
+        <div class="fg2"><div class="fg"><label>Department</label><select id="aDept"><option>Pulmonology</option><option>Cardiology</option><option>Gastroenterology</option><option>Nephrology</option><option>Endocrinology</option><option>Neurology</option><option>Rheumatology</option><option>Traumatology</option><option>Hematology</option><option>Psychiatry</option><option>Otorhinolaryngology</option><option>Infectious diseases</option><option>Surgery</option><option>Urology</option><option>Therapy</option></select></div><div class="fg"><label>Hospitalization days</label><input type="number" id="aDays" placeholder="7" min="1"></div></div>
+        <div class="fg"><label>Comorbidity</label><input id="aComorbid" placeholder="Type 2 diabetes"></div>
+        <div class="fg2"><div class="fg"><label>Previous operations</label><select id="aPrevOps"><option value="None">None</option><option value="Yes">Yes</option></select></div><div class="fg"><label>Drug allergies</label><input id="aAllergy" placeholder="None"></div></div>
+        <div class="fg2"><div class="fg"><label>Contraindications</label><input id="aContra" placeholder="None"></div><div class="fg"><label>Contact (phone)</label><input id="aPhone" placeholder="+7 777 123 4567"></div></div>
+        <div class="fg2"><div class="fg"><label>Attending doctor</label><select id="aDoctor"><option value="">— Select doctor —</option></select></div><div class="fg"><label>Readmission</label><div class="toggle-row"><button class="toggle-opt active" data-val="false" onclick="setToggle(this)">No</button><button class="toggle-opt" data-val="true" onclick="setToggle(this)">Yes</button></div></div></div>
+      </div>
+      <div class="modal-foot"><button class="btn-ghost" onclick="closeAddModal()">Cancel</button><button class="btn-primary" id="submitBtn" onclick="submitPatient()">Add Patient</button></div>
+    </div>
+  </div>
+
+  <!-- Patient detail side panel -->
+  <div class="side-panel" id="sidePanel">
+    <div class="sp-head"><h3 id="spTitle">Patient</h3><button class="modal-x" onclick="closeSidePanel()">&times;</button></div>
+    <div class="sp-body" id="spBody"></div>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="overlay" id="settingsOverlay" onclick="closeSettings(event)">
+    <div class="modal" style="width:380px" onclick="event.stopPropagation()">
+      <div class="modal-head"><h2 id="settingsTitle" data-i18n="settings">Settings</h2><button class="modal-x" onclick="closeSettings()">&times;</button></div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <div class="settings-label" data-i18n="language">Language</div>
+          <div class="lang-btns">
+            <button class="lang-btn" data-lang="en" onclick="switchLang('en')">English</button>
+            <button class="lang-btn" data-lang="ru" onclick="switchLang('ru')">Русский</button>
+            <button class="lang-btn" data-lang="kz" onclick="switchLang('kz')">Қазақша</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-label" data-i18n="aboutUs">About Us</div>
+          <p style="font-size:.85rem;color:var(--g600);line-height:1.6" id="aboutText" data-i18n="aboutText">PredVisit is a medical data management system with integrated AI.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onboarding (first-time only) -->
+  <div class="onboard-overlay" id="onboardOverlay" style="display:none">
+    <div class="onboard-card">
+      <div class="onboard-logo"><img src="/image.png" alt="PredVisit"></div>
+      <h2>Welcome to PredVisit</h2>
+      <p>Medical Data Management System with integrated AI. Analyze readmission rates, manage patients, plan operations, and communicate with your team.</p>
+      <button class="btn-primary" style="width:100%;padding:12px;font-size:.95rem" onclick="dismissOnboard()">Get Started</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/lang.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/notify.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

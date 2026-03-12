@@ -1,0 +1,8 @@
+{
+  "name": "med-ai-dashboard",
+  "version": "2.0.0",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  }
+}
